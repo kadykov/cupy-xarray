@@ -113,22 +113,21 @@ class CupyDatasetAccessor:
 
     @property
     def is_cupy(self):
-        return all([da.cupy.is_cupy for da in self.ds.data_vars.values()])
+        return all(da.cupy.is_cupy for da in self.ds.data_vars.values())
 
     def as_cupy(self):
         data_vars = {var: da.as_cupy() for var, da in self.ds.data_vars.items()}
         return Dataset(data_vars=data_vars, coords=self.ds.coords, attrs=self.ds.attrs)
 
     def as_numpy(self):
-        if self.is_cupy:
-            data_vars = {var: da.cupy.as_numpy() for var, da in self.ds.data_vars.items()}
-            return Dataset(
-                data_vars=data_vars,
-                coords=self.ds.coords,
-                attrs=self.ds.attrs,
-            )
-        else:
+        if not self.is_cupy:
             return self.ds.as_numpy()
+        data_vars = {var: da.cupy.as_numpy() for var, da in self.ds.data_vars.items()}
+        return Dataset(
+            data_vars=data_vars,
+            coords=self.ds.coords,
+            attrs=self.ds.attrs,
+        )
 
 
 # Attach the `as_cupy` methods to the top level `Dataset` and `Dataarray` objects.
